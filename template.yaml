@@ -193,11 +193,21 @@ Resources:
       DefinitionString: !Sub |
         {
           "Comment": "Process images with Textract",
-          "StartAt": "ExtractText",
+          "StartAt": "FetchImage",
           "States": {
+            "FetchImage": {
+              "Type": "Task",
+              "Resource": "${FetchImageFunction.Arn}",
+              "Next": "ExtractText"
+            },
             "ExtractText": {
               "Type": "Task",
               "Resource": "${TextractFunction.Arn}",
+              "Next": "SaveResults"
+            },
+            "SaveResults": {
+              "Type": "Task",
+              "Resource": "${SaveResultsFunction.Arn}",
               "End": true
             }
           }
@@ -245,6 +255,24 @@ Resources:
       ServerlessV2ScalingConfiguration:
         MinCapacity: 0.5
         MaxCapacity: 4
+  FetchImageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/textract/
+      Handler: fetch_image.lambda_handler
+      Runtime: python3.11
+      Timeout: 30
+      Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/LabRole'
+
+  SaveResultsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/textract/
+      Handler: save_results.lambda_handler
+      Runtime: python3.11
+      Timeout: 30
+      Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/LabRole'
+
 Outputs:
   WebsiteURL:
     Value: !GetAtt FrontendBucket.WebsiteURL
