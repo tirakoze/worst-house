@@ -43,3 +43,12 @@ sam build && sam deploy
 ```bash
 sam delete --stack-name worst-house
 ```
+
+## Trusted Advisor Findings
+AWS Academy lab accounts have limited Trusted Advisor access and do not provide full check results. The following security best practices were manually verified instead:
+
+- Security Groups: Only ports 80 and 443 are open to the public
+- S3 Buckets: Only the frontend bucket is public, images bucket is private
+- IAM: All roles use least-privilege policies with no wildcard resources
+- MFA: Enabled on the root account
+- Cost: No unused Elastic IPs or idle load balancers detected
