@@ -70,3 +70,34 @@ Estimated using AWS Pricing Calculator for 1 year of operations.
 **Total 12-month cost: $1,487.76**
 
 Full estimate: [AWS Pricing Calculator]([200~https://calculator.aws/#/estimate?id=618d371e412ece198d9a9a19fefd7e65e17347a1~)
+
+
+## Architecture Diagram
+
+```mermaid
+graph TD
+    User[User browser] --> CF[CloudFront CDN]
+    CF --> S3Web[S3 Static Site]
+    CF --> ALB[Application Load Balancer]
+
+    subgraph VPC [VPC - Public and Private Subnets]
+        ALB --> ASG[EC2 Auto Scaling Group]
+        ASG --> NAT[NAT Gateway]
+    end
+
+    ASG --> SF[Step Functions State Machine]
+
+    subgraph Serverless [Serverless Orchestration]
+        SF --> L1[Lambda: Fetch image from S3]
+        SF --> L2[Lambda: Call Textract]
+        SF --> L3[Lambda: Save results]
+        L2 -.-> Textract[Amazon Textract]
+    end
+
+    L1 -.-> S3Store[S3 Bucket: Images]
+    S3Store -.-> Glacier[S3 Glacier: After 90 days]
+    L3 -.-> Aurora[Aurora MySQL: Metadata]
+
+    CW[CloudWatch] -.-> SF
+    CW -.-> VPC
+```
