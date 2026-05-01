@@ -52,3 +52,21 @@ AWS Academy lab accounts have limited Trusted Advisor access and do not provide 
 - IAM: All roles use least-privilege policies with no wildcard resources
 - MFA: Enabled on the root account
 - Cost: No unused Elastic IPs or idle load balancers detected
+
+## TCO Report (Annual Cost Estimate)
+
+Estimated using AWS Pricing Calculator for 1 year of operations.
+
+| Service | Monthly Cost |
+|---------|-------------|
+| Amazon Aurora MySQL | $57.54 |
+| NAT Gateway (VPC) | $33.30 |
+| Elastic Load Balancing | $31.03 |
+| Amazon S3 | $1.16 |
+| Amazon CloudFront | $0.95 |
+| AWS Lambda | $0.00 |
+| **Total** | **$123.98/month** |
+
+**Total 12-month cost: $1,487.76**
+
+Full estimate: [AWS Pricing Calculator]([200~https://calculator.aws/#/estimate?id=618d371e412ece198d9a9a19fefd7e65e17347a1~)
