@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worst House - Shopping List Processor</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        h1 { color: #232f3e; }
+        .card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        input[type="file"] { margin: 10px 0; }
+        button { background: #ff9900; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #e88a00; }
+        button.delete { background: #d13212; }
+        button.delete:hover { background: #b02a0f; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #232f3e; color: white; }
+        #status { color: green; margin: 10px 0; }
+        #error { color: red; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Worst House in the Best Neighborhood</h1>
+    <p>Shopping List Image Processor — powered by AWS Textract</p>
+
+    <div class="card">
+        <h2>Upload Shopping List Photo</h2>
+        <input type="file" id="imageInput" accept="image/*">
+        <br>
+        <button onclick="uploadImage()">Upload and Process</button>
+        <div id="status"></div>
+        <div id="error"></div>
+    </div>
+
+    <div class="card">
+        <h2>Processing Jobs</h2>
+        <button onclick="loadJobs()">Refresh Jobs</button>
+        <table id="jobsTable">
+            <thead><tr><th>Job ID</th><th>Status</th><th>Image Key</th></tr></thead>
+            <tbody id="jobsBody"></tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Extracted Shopping List Items</h2>
+        <button onclick="loadRecords()">Refresh Records</button>
+        <table id="recordsTable">
+            <thead><tr><th>Record ID</th><th>Extracted Text</th><th>Action</th></tr></thead>
+            <tbody id="recordsBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const API = window.API_URL || '';
+
+        async function uploadImage() {
+            const file = document.getElementById('imageInput').files[0];
+            if (!file) { showError('Please select an image first.'); return; }
+            showStatus('Uploading...');
+            try {
+                const res = await fetch(`${API}/api/jobs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bucket: 'worst-house-images-046595866169', key: file.name })
+                });
+                const data = await res.json();
+                showStatus(`Job started! Job ID: ${data.jobId}`);
+                setTimeout(loadJobs, 2000);
+            } catch(e) { showError('Upload failed: ' + e.message); }
+        }
+
+        async function loadJobs() {
+            try {
+                const res = await fetch(`${API}/health`);
+                showStatus('API is healthy');
+            } catch(e) { showError('Could not reach API'); }
+        }
+
+        async function loadRecords() {
+            try {
+                const res = await fetch(`${API}/api/records`);
+                const items = await res.json();
+                const tbody = document.getElementById('recordsBody');
+                tbody.innerHTML = '';
+                items.forEach(item => {
+                    const row = `<tr>
+                        <td>${item.recordId || ''}</td>
+                        <td>${item.extracted_text || ''}</td>
+                        <td><button class="delete" onclick="deleteRecord('${item.recordId}')">Delete</button></td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            } catch(e) { showError('Could not load records'); }
+        }
+
+        async function deleteRecord(recordId) {
+            try {
+                await fetch(`${API}/api/records/${recordId}`, { method: 'DELETE' });
+                showStatus('Record deleted');
+                loadRecords();
+            } catch(e) { showError('Delete failed'); }
+        }
+
+        function showStatus(msg) {
+            document.getElementById('status').textContent = msg;
+            document.getElementById('error').textContent = '';
+        }
+
+        function showError(msg) {
+            document.getElementById('error').textContent = msg;
+            document.getElementById('status').textContent = '';
+        }
+
+        loadRecords();
+    </script>
+</body>
+</html>

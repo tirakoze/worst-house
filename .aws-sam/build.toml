@@ -7,6 +7,6 @@ architecture = "x86_64"
 handler = "app.lambda_handler"
 manifest_hash = ""
 packagetype = "Zip"
-functions = ["TextractFunction", "FetchImageFunction", "SaveResultsFunction"]
+functions = ["TextractFunction", "StaticProxyFunction", "HealthFunction", "SubmitFunction", "PollFunction", "RecordsFunction", "FetchImageFunction", "SaveResultsFunction"]
 
 [layer_build_definitions]
