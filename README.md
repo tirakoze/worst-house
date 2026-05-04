@@ -8,7 +8,29 @@ A 4-tier AWS serverless application built with AWS SAM.
 - Tier 3: Lambda + Step Functions + Amazon Textract
 - Tier 4: Aurora MySQL + S3 images bucket + Glacier lifecycle
 
-## Well-Architected Review
+
+
+## Well-Architected Framework Review
+
+### Operational Excellence
+**Q: How does the architecture support automated operations and monitoring?**
+A: All infrastructure is defined as code in template.yaml using AWS SAM, enabling repeatable deployments with zero manual configuration. CloudWatch monitors Step Functions executions and Lambda invocations automatically, providing visibility into every processing job.
+
+### Security
+**Q: How does the architecture enforce least-privilege access and protect data?**
+A: All compute and database resources are placed in private subnets with no public internet exposure. IAM roles follow least-privilege principles with specific actions per resource. The NAT Gateway allows outbound-only internet access. S3 buckets use bucket policies to restrict access, and API Gateway acts as the single entry point for all client requests.
+
+### Reliability
+**Q: How does the architecture handle failures and ensure availability?**
+A: The Application Load Balancer distributes traffic across multiple availability zones. Auto Scaling automatically adds EC2 instances when CPU exceeds 70%, preventing 504 timeouts. Step Functions automatically retries failed Lambda executions. Aurora MySQL provides automated backups and multi-AZ failover capability.
+
+### Performance Efficiency
+**Q: How does the architecture scale efficiently to meet demand?**
+A: Lambda functions scale automatically with zero idle cost, handling thousands of concurrent image processing requests. CloudFront delivers static assets from edge locations near users, reducing latency. Aurora Serverless v2 scales database capacity up and down based on actual workload.
+
+### Cost Optimization
+**Q: How does the architecture minimize unnecessary spending?**
+A: Lambda charges only per invocation with no idle cost — estimated at $0.00/month for our workload. S3 Glacier lifecycle rules automatically move images to cheap archival storage after 90 days, reducing storage costs by up to 80%. The total estimated monthly cost is $123.98 based on the AWS Pricing Calculator estimate.
 
 ### Operational Excellence
 All infrastructure is defined as code in template.yaml using AWS SAM. Deployments are automated via sam build and sam deploy. GitHub commits are linked to issue numbers for full traceability.
